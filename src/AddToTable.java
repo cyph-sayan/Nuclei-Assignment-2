@@ -20,16 +20,24 @@ public class AddToTable {
             pstmt1.setString(3,String.valueOf(studentInfo.age));
             pstmt1.setString(4,studentInfo.address);
             pstmt1.executeUpdate();
+        } catch(SQLIntegrityConstraintViolationException e){
+            System.out.println("Duplicate Roll No.");
+        }catch (SQLException ex){
+            ex.printStackTrace();
+        }
+        try(Connection conn= DriverManager.getConnection(dotenv.get("URL"), dotenv.get("USERNAME"), dotenv.get("PASS"));
+            Statement stmt=conn.createStatement();){
+            String sql="USE NUCLEIASSIGNMENT";
+            stmt.execute(sql);
             PreparedStatement pstmt2=conn.prepareStatement("INSERT INTO COURSEINFO VALUES (?,?)");
             pstmt2.setString(2,String.valueOf(studentInfo.rollNo));
             for(int i=0; i<studentInfo.courses.size();i++){
                 pstmt2.setString(1,String.valueOf(studentInfo.courses.get(i)));
                 pstmt2.executeUpdate();
             }
-        } catch(SQLIntegrityConstraintViolationException e){
-            System.out.println("Duplicate Roll No.");
-        }catch (SQLException ex){
-            ex.printStackTrace();
+        }catch (SQLException e)
+        {
+            e.printStackTrace();
         }
     }
 }

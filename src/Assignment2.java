@@ -1,7 +1,6 @@
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
+
 class StudentInfo implements Serializable
 {
     protected String fullName;
@@ -18,8 +17,18 @@ class StudentInfo implements Serializable
     }
 }
 public class Assignment2 {
+    boolean isValidCourse(String course){
+        Set<String> vowelSet=new HashSet<>();
+        vowelSet.add("A");
+        vowelSet.add("B");
+        vowelSet.add("C");
+        vowelSet.add("D");
+        vowelSet.add("E");
+        return vowelSet.contains(course);
+    }
     public static void main(String[] args) throws Exception {
         Scanner sc = new Scanner(System.in);
+        Assignment2 ab=new Assignment2();
         while (true) {
             System.out.println("1.Add Student Details\n2.Display Student Details\n3.Delete Student Details\n4.Save To File\n5.Exit");
             int option = Integer.parseInt(sc.nextLine());
@@ -39,8 +48,17 @@ public class Assignment2 {
                     System.out.println("Enter the no. of courses to be registered");
                     int n = Integer.parseInt(sc.nextLine());
                     List<String> courses = new ArrayList<>();
-                    for (int i = 0; i < n; i++) {
-                        courses.add(sc.nextLine());
+                    System.out.println("Enter Courses to be Registered:");
+                    while(n!=0){
+                        String cour=sc.nextLine();
+                        if(ab.isValidCourse(cour.toUpperCase()))
+                        {
+                            courses.add(cour);
+                            n=n-1;
+                        }
+                        else{
+                            System.out.println("Invalid Course");
+                        }
                     }
                     StudentInfo so = new StudentInfo(name, age, address, roll, courses);
                     AddToTable ad = new AddToTable();
