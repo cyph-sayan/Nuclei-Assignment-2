@@ -5,7 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.sql.Statement;
-public class AddToTable {
+public class AddToStudent {
     Dotenv dotenv=Dotenv.load();
     void InsertIntoTable(StudentInfo studentInfo)
     {
@@ -25,19 +25,6 @@ public class AddToTable {
         }catch (SQLException ex){
             ex.printStackTrace();
         }
-        try(Connection conn= DriverManager.getConnection(dotenv.get("URL"), dotenv.get("USERNAME"), dotenv.get("PASS"));
-            Statement stmt=conn.createStatement();){
-            String sql="USE NUCLEIASSIGNMENT";
-            stmt.execute(sql);
-            PreparedStatement pstmt2=conn.prepareStatement("INSERT INTO COURSEINFO VALUES (?,?)");
-            pstmt2.setString(2,String.valueOf(studentInfo.rollNo));
-            for(int i=0; i<studentInfo.courses.size();i++){
-                pstmt2.setString(1,String.valueOf(studentInfo.courses.get(i)));
-                pstmt2.executeUpdate();
-            }
-        }catch (SQLException e)
-        {
-            e.printStackTrace();
-        }
+
     }
 }

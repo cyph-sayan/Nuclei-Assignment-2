@@ -61,9 +61,11 @@ public class Assignment2 {
                         }
                     }
                     StudentInfo so = new StudentInfo(name, age, address, roll, courses);
-                    AddToTable ad = new AddToTable();
+                    AddToStudent ad = new AddToStudent();
+                    AddToCourseInfo cs=new AddToCourseInfo();
                     try {
                         ad.InsertIntoTable(so);
+                        cs.addToCourse(so);
                     } catch (Exception e) {
                         System.out.println("Error");
                     }
