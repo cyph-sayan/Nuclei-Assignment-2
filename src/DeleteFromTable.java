@@ -1,21 +1,28 @@
 import io.github.cdimascio.dotenv.Dotenv;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 public class DeleteFromTable {
     Dotenv dotenv = Dotenv.load();
     void deleteData(int rollNo) {
         try (Connection conn = DriverManager.getConnection(dotenv.get("URL"), dotenv.get("USERNAME"), dotenv.get("PASS"));
              Statement stmt = conn.createStatement();) {
-            String sql = "USE NUCLEIASSIGNMENT";
-            stmt.execute(sql);
-            PreparedStatement pstmt1 = conn.prepareStatement("DELETE FROM STUDENTINFO WHERE ROLL=(?)");
-            pstmt1.setString(1, String.valueOf(rollNo));
-            int a=pstmt1.executeUpdate();
-            if(a==0)
+            String selectDatabase = "USE NUCLEIASSIGNMENT";
+            stmt.execute(selectDatabase);
+            PreparedStatement insertQuery = conn.prepareStatement("DELETE FROM STUDENTINFO WHERE ROLL=(?)");
+            insertQuery.setString(1, String.valueOf(rollNo));
+            int rowsAffected=insertQuery.executeUpdate();
+            if(rowsAffected==0)
             {
                 System.out.println("No Student Details Found For The Entered Roll No.");;
             }
+            else {
+                System.out.println("Student Data Deleted Successfully");
+            }
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.out.println("Database Connection Error");
         }
     }
 }
