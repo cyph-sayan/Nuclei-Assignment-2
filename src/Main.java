@@ -1,41 +1,26 @@
-import java.io.Serializable;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Set;
-import java.util.HashSet;
-import java.util.Scanner;
-class StudentInfo implements Serializable
-{
-    protected String fullName;
-    protected int age;
-    protected String address;
-    protected int rollNo;
-    protected List<String> courses;
-    StudentInfo(String name, int age, String address, int rollNo, List<String> courses){
-        this.fullName=name;
-        this.address=address;
-        this.age=age;
-        this.rollNo=rollNo;
-        this.courses=courses;
-    }
-}
-public class Assignment2 {
+import java.util.*;
+import Database.DatabaseHandler;
+import Database.DatabaseHandlerImpl;
+import enums.Course;
+import enums.SortFieldOptions;
+import enums.SortOption;
+import models.requests.CreateUserRequest;
+import models.requests.DeleteUserRequest;
+import models.requests.ListUserRequest;
+import views.DisplayStudents;
+
+public class Main {
+    public static Set<String> courseSet=new HashSet<>();
     boolean isValidCourse(String course){
-        Set<String> courseSet=new HashSet<>();
-        courseSet.add("A");
-        courseSet.add("B");
-        courseSet.add("C");
-        courseSet.add("D");
-        courseSet.add("E");
-        courseSet.add("F");
         return courseSet.contains(course);
     }
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args)  {
+        Collections.addAll(courseSet,"A","B","C","D","E","F");
         Scanner sc = new Scanner(System.in);
-        Assignment2 ab=new Assignment2();
+        Main ab=new Main();
         int option,age,noOfCourses,roll;
         String name,address,course;
-
+        DatabaseHandler db=new DatabaseHandlerImpl();
         try {
             while (true) {
                 System.out.println("1.Add Student Details\n2.Display Student Details\n3.Delete Student Details\n4.Save To File\n5.Exit");
@@ -58,35 +43,29 @@ public class Assignment2 {
                                 System.out.println("Please Enter a Number Greater Than 4");
                             }
                         }while (noOfCourses<4);
-                        List<String> courses = new ArrayList<>();
                         System.out.println("Enter Courses to be Registered:");
+                        List<Course> courses=new ArrayList<>();
                         while (noOfCourses != 0) {
                             course = sc.nextLine();
                             if (ab.isValidCourse(course.toUpperCase())){
-                                courses.add(course);
                                 noOfCourses = noOfCourses - 1;
+                                courses.add(Course.valueOf(course.toUpperCase()));
                             } else{
                                 System.out.println("Invalid Course");
                             }
                         }
-                        StudentInfo studentInfo = new StudentInfo(name, age, address, roll, courses);
-                        AddToStudent addToStudent = new AddToStudent();
-                        AddToCourseInfo addToCourseInfo = new AddToCourseInfo();
-                        addToStudent.InsertIntoTable(studentInfo);
-                        addToCourseInfo.addToCourse(studentInfo);
+                        CreateUserRequest createUserRequest=new CreateUserRequest(name,age,address,roll,courses);
+                        db.createUser(createUserRequest);
                         break;
                     case 2:
-                        DisplayFromTable dp = new DisplayFromTable();
-                        dp.display();
+                        ListUserRequest listUserRequest=new ListUserRequest(SortOption.ASC, SortFieldOptions.ADDRESS);
+                        DisplayStudents ds=new DisplayStudents();
+                        ds.display(db.listUser(listUserRequest));
                         break;
                     case 3:
-                        DeleteFromTable dl = new DeleteFromTable();
                         System.out.println("Enter Roll Number To Be Deleted");
-                        dl.deleteData(Integer.parseInt(sc.nextLine()));
-                        break;
-                    case 4:
-                        SaveToFile sv = new SaveToFile();
-                        sv.save();
+                        DeleteUserRequest deleteUserRequest=new DeleteUserRequest(Integer.parseInt(sc.nextLine()));
+                        db.deleteUser(deleteUserRequest);
                         break;
                     case 5:
                         System.exit(0);
