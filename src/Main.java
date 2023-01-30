@@ -68,6 +68,7 @@ public class Main {
                         db.deleteUser(deleteUserRequest);
                         break;
                     case 5:
+                        db.closeConnection();
                         System.exit(0);
                     default:
                         System.out.println("Invalid Choice");
