@@ -5,20 +5,22 @@ import models.entities.User;
 import models.requests.CreateUserRequest;
 import models.requests.DeleteUserRequest;
 import models.requests.ListUserRequest;
-
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.PreparedStatement;
+import java.sql.SQLIntegrityConstraintViolationException;
+import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class DatabaseHandlerImpl implements DatabaseHandler{
     Dotenv dotenv=Dotenv.load();
     Connection connection;
     public DatabaseHandlerImpl(){
         try {
-            connection = DriverManager.getConnection(dotenv.get("URL"), dotenv.get("USERNAME"), dotenv.get("PASS"));
-            Statement stmt=connection.createStatement();
-            String selectDatabase="USE NUCLEIASSIGNMENT";
-            stmt.execute(selectDatabase);
+            connection = DriverManager.getConnection(Objects.requireNonNull(dotenv.get("URL")), dotenv.get("USERNAME"), dotenv.get("PASS"));
         }catch (SQLException e){
             System.out.println("Database Not Available");
         }
@@ -48,9 +50,7 @@ public class DatabaseHandlerImpl implements DatabaseHandler{
 
     @Override
     public void deleteUser(DeleteUserRequest req) {
-        try (Statement stmt = connection.createStatement()) {
-            String selectDatabase = "USE NUCLEIASSIGNMENT";
-            stmt.execute(selectDatabase);
+        try{
             PreparedStatement insertQuery = connection.prepareStatement("DELETE FROM STUDENTINFO WHERE ROLL=(?)");
             insertQuery.setString(1, String.valueOf(req.getRollNo()));
             int rowsAffected=insertQuery.executeUpdate();
@@ -68,29 +68,28 @@ public class DatabaseHandlerImpl implements DatabaseHandler{
     @Override
     public User listUser(ListUserRequest req){
         User user=null;
-        try(Statement stmt=connection.createStatement())
+        try
         {
-            String selectDatabase="USE nucleiassignment";
-            stmt.execute(selectDatabase);
             PreparedStatement selectQuery;
             selectQuery= connection.prepareStatement("SELECT * FROM STUDENTINFO WHERE roll=(?)");
             selectQuery.setString(1,String.valueOf(req.getRollNo()));
-            ResultSet rs=selectQuery.executeQuery();
-            List<Course> courses=new ArrayList<>();
-            String name=rs.getString("Name");
-            int age=rs.getInt("Age");
-            int roll=rs.getInt("Roll");
-            String address=rs.getString("Address");
-            PreparedStatement preparedStatement=connection.prepareStatement("SELECT COURSEID FROM COURSEINFO WHERE ROLL=(?) ORDER BY COURSEID ASC");
-            preparedStatement.setString(1,String.valueOf(roll));
-            ResultSet rs1=preparedStatement.executeQuery();
-            while(rs1.next())
-            {
-                courses.add(Course.valueOf(rs1.getString(1).toUpperCase()));
+            try(ResultSet rs=selectQuery.executeQuery()) {
+                List<Course> courses = new ArrayList<>();
+                String name = rs.getString("Name");
+                int age = rs.getInt("Age");
+                int roll = rs.getInt("Roll");
+                String address = rs.getString("Address");
+                PreparedStatement preparedStatement = connection.prepareStatement("SELECT COURSEID FROM COURSEINFO WHERE ROLL=(?) ORDER BY COURSEID ASC");
+                preparedStatement.setString(1, String.valueOf(roll));
+                ResultSet rs1 = preparedStatement.executeQuery();
+                while (rs1.next()) {
+                    courses.add(Course.valueOf(rs1.getString(1).toUpperCase()));
+                }
+                user = new User(name, age, address, roll, courses);
+            }catch (SQLException e){
+                System.out.println("Data doesnt Exists for the given roll");
             }
-            user=new User(name,age,address,roll,courses);
-
-        } catch(SQLException e){
+        }catch(SQLException e){
             e.printStackTrace();
             System.out.println("Database Connection Error");
         }

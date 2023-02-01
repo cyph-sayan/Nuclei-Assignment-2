@@ -4,8 +4,6 @@ import models.requests.CreateUserRequest;
 import models.requests.DeleteUserRequest;
 import models.requests.ListUserRequest;
 
-import java.util.List;
-
 public interface DatabaseHandler {
     void createUser(CreateUserRequest req);
     void deleteUser(DeleteUserRequest req);
