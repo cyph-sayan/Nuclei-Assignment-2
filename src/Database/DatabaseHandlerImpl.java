@@ -1,16 +1,21 @@
 package Database;
+import constants.databasefieldconstants;
 import enums.Course;
+import errormessages.ExceptionErrorMessages;
 import io.github.cdimascio.dotenv.Dotenv;
 import models.entities.User;
 import models.requests.CreateUserRequest;
 import models.requests.DeleteUserRequest;
 import models.requests.ListUserRequest;
+import sql.studentquery;
+import successmessages.SuccessMessages;
+
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.ResultSet;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.PreparedStatement;
 import java.sql.SQLIntegrityConstraintViolationException;
-import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -18,89 +23,99 @@ import java.util.Objects;
 public class DatabaseHandlerImpl implements DatabaseHandler{
     Dotenv dotenv=Dotenv.load();
     Connection connection;
+    Statement stmt;
     public DatabaseHandlerImpl(){
         try {
             connection = DriverManager.getConnection(Objects.requireNonNull(dotenv.get("URL")), dotenv.get("USERNAME"), dotenv.get("PASS"));
+            stmt=connection.createStatement();
         }catch (SQLException e){
-            System.out.println("Database Not Available");
+            System.out.println(ExceptionErrorMessages.SQL_DATABASE_CONNECTION_ERROR);
         }
     }
     @Override
     public void createUser(CreateUserRequest req){
         try
         {
-            PreparedStatement insertQuery1=connection.prepareStatement("INSERT INTO STUDENTINFO VALUES (?,?,?,?)");
-            insertQuery1.setString(1,req.getFullName());
-            insertQuery1.setString(2,String.valueOf(req.getRollNo()));
-            insertQuery1.setString(3,String.valueOf(req.getAge()));
-            insertQuery1.setString(4, req.getAddress());
-            insertQuery1.executeUpdate();
-            PreparedStatement insertQuery2=connection.prepareStatement("INSERT INTO COURSEINFO VALUES (?,?)");
-            insertQuery2.setString(2,String.valueOf(req.getRollNo()));
+            String student=sql.studentquery.insertIntoStudent(req.getFullName(),String.valueOf(req.getRollNo()),String.valueOf(req.getAge()),req.getAddress());
+            System.out.println(student);
+            stmt.executeUpdate(student);
             for(int i=0; i<req.getCourses().size();i++){
-                insertQuery2.setString(1,String.valueOf(req.getCourses().get(i)));
-                insertQuery2.executeUpdate();
+                String course=studentquery.insertIntoCourse(String.valueOf(req.getCourses().get(i)),String.valueOf(req.getRollNo()));
+                stmt.executeUpdate(course);
             }
         }catch (SQLIntegrityConstraintViolationException e){
-            System.out.println("Roll No. Already Present");
+            System.out.println(ExceptionErrorMessages.SQL_DUPLICATE_ROLL_NO_ERROR);
         }catch (SQLException e){
-            System.out.println("Database Not Available");
+            System.out.println(ExceptionErrorMessages.SQL_DATABASE_CONNECTION_ERROR);
         }
     }
 
     @Override
     public void deleteUser(DeleteUserRequest req) {
         try{
-            PreparedStatement insertQuery = connection.prepareStatement("DELETE FROM STUDENTINFO WHERE ROLL=(?)");
-            insertQuery.setString(1, String.valueOf(req.getRollNo()));
-            int rowsAffected=insertQuery.executeUpdate();
+            String delUser=studentquery.delStudentDetails(String.valueOf(req.getRollNo()));
+            int rowsAffected=stmt.executeUpdate(delUser);
             if(rowsAffected==0)
             {
-                System.out.println("No Student Details Found For The Entered Roll No.");
+                System.out.println(ExceptionErrorMessages.SQL_NO_ROWS_AFFECTED);
             }
             else {
-                System.out.println("Student Data Deleted Successfully");
+                System.out.println(SuccessMessages.SQL_DELETE_SUCCESS_MESSAGE);
             }
         } catch (SQLException e) {
-            System.out.println("Database Connection Error");
+            System.out.println(ExceptionErrorMessages.SQL_DATABASE_CONNECTION_ERROR);
         }
     }
     @Override
-    public User listUser(ListUserRequest req){
+    public User getUser(ListUserRequest req){
         User user=null;
-        try
-        {
-            PreparedStatement selectQuery;
-            selectQuery= connection.prepareStatement("SELECT * FROM STUDENTINFO WHERE roll=(?)");
-            selectQuery.setString(1,String.valueOf(req.getRollNo()));
-            try(ResultSet rs=selectQuery.executeQuery()) {
+        try(ResultSet rs=stmt.executeQuery(studentquery.getStudentDetails(String.valueOf(req.getRollNo())))) {
+            rs.next();
+            List<Course> courses = new ArrayList<>();
+            String name = rs.getString(databasefieldconstants.name);
+            int age = rs.getInt(databasefieldconstants.age);
+            int roll = rs.getInt(databasefieldconstants.roll);
+            String address = rs.getString(databasefieldconstants.address);
+            ResultSet rs1 = stmt.executeQuery(studentquery.getCourseDetails(String.valueOf(req.getRollNo())));
+            while (rs1.next()) {
+                courses.add(Course.valueOf(rs1.getString(1).toUpperCase()));
+            }
+            user=new User(name, age, address, roll, courses);
+            }catch (SQLException e){
+                System.out.println(ExceptionErrorMessages.SQL_NO_DATA_EXISTS_ERROR+e.getMessage());
+            }
+            return user;
+    }
+
+    @Override
+    public List<User> getUsers() {
+        List<User> users=new ArrayList<>();
+        try{
+            ResultSet rs=stmt.executeQuery(sql.studentquery.listStudents());
+            while(rs.next()){
                 List<Course> courses = new ArrayList<>();
-                String name = rs.getString("Name");
-                int age = rs.getInt("Age");
-                int roll = rs.getInt("Roll");
-                String address = rs.getString("Address");
-                PreparedStatement preparedStatement = connection.prepareStatement("SELECT COURSEID FROM COURSEINFO WHERE ROLL=(?) ORDER BY COURSEID ASC");
-                preparedStatement.setString(1, String.valueOf(roll));
-                ResultSet rs1 = preparedStatement.executeQuery();
+                String name = rs.getString(databasefieldconstants.name);
+                int age = rs.getInt(databasefieldconstants.age);
+                int roll = rs.getInt(databasefieldconstants.roll);
+                String address = rs.getString(databasefieldconstants.address);
+                Statement stmt2=connection.createStatement();
+                ResultSet rs1 = stmt2.executeQuery(studentquery.getCourseDetails(String.valueOf(roll)));
                 while (rs1.next()) {
                     courses.add(Course.valueOf(rs1.getString(1).toUpperCase()));
                 }
-                user = new User(name, age, address, roll, courses);
-            }catch (SQLException e){
-                System.out.println("Data doesnt Exists for the given roll");
+                users.add(new User(name, age, address, roll, courses));
             }
-        }catch(SQLException e){
-            e.printStackTrace();
-            System.out.println("Database Connection Error");
+        }catch (SQLException e){
+            System.out.println(ExceptionErrorMessages.SQL_NO_DATA_EXISTS_ERROR+e.getMessage());
         }
-        return user;
+        return users;
     }
     @Override
     public void closeConnection() {
         try {
             connection.close();
         }catch (SQLException e){
-            System.out.println("Connection Already Closed");
+            System.out.println(ExceptionErrorMessages.SQL_CLOSE_CONNECTION_ERROR+e.getMessage());
         }
     }
 }

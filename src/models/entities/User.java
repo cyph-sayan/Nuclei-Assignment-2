@@ -30,4 +30,8 @@ public class User {
     public List<Course> getCourses() {
         return courses;
     }
+    @Override
+    public String toString(){
+        return String.format("%s %d %d %s %s",this.fullName,this.age,this.rollNo,this.address,this.courses);
+    }
 }

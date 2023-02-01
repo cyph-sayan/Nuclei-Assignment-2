@@ -6,12 +6,10 @@ import java.util.List;
 import Database.DatabaseHandler;
 import Database.DatabaseHandlerImpl;
 import enums.Course;
-import enums.SortFieldOptions;
-import enums.SortOption;
+import models.entities.User;
 import models.requests.CreateUserRequest;
 import models.requests.DeleteUserRequest;
 import models.requests.ListUserRequest;
-import views.DisplayStudents;
 
 public class Main {
     public static void main(String[] args)  {
@@ -37,7 +35,6 @@ public class Main {
                         List<Course> courses=new ArrayList<>();
                         while (true)
                         {
-                            courses.removeAll(courses);
                             System.out.println("Enter Course to be registered For: A, B, C, D, E, F\nA minimum registration of 4 courses is mandatory");
                             boolean isValid=true;
                             String [] courseArray=sc.nextLine().split(",");
@@ -47,7 +44,7 @@ public class Main {
                             }
                             else {
                                 for(String course:courseArray){
-                                    if(!Stream.of(Course.values()).map(Course::name).collect(Collectors.toList()).contains(course))
+                                    if(!Stream.of(Course.values()).map(Course::name).collect(Collectors.toList()).contains(course.toUpperCase()))
                                     {
                                         System.out.println("Invalid Course Entered");
                                         isValid=false;
@@ -66,15 +63,21 @@ public class Main {
                         db.createUser(createUserRequest);
                         break;
                     case 2:
-                        System.out.println("Enter the Roll No. of the Student to view the data");
-                        ListUserRequest listUserRequest=new ListUserRequest(Integer.parseInt(sc.nextLine()));
-                        DisplayStudents ds=new DisplayStudents();
-                        ds.display(db.listUser(listUserRequest));
+                        System.out.println("Enter the Roll No. of the Student to view the data or * for all the data");
+                        String rollNo=sc.nextLine();
+                        if(rollNo.equals("*"))
+                        {
+                            List<User> users=db.getUsers();
+                            users.forEach(user->{
+                                System.out.println(user.toString());
+                            });
+                        }
+                        else
+                            System.out.println(db.getUser(new ListUserRequest(Integer.parseInt(rollNo))).toString());
                         break;
                     case 3:
                         System.out.println("Enter Roll Number To Be Deleted");
-                        DeleteUserRequest deleteUserRequest=new DeleteUserRequest(Integer.parseInt(sc.nextLine()));
-                        db.deleteUser(deleteUserRequest);
+                        db.deleteUser(new DeleteUserRequest(Integer.parseInt(sc.nextLine())));
                         break;
                     case 5:
                         db.closeConnection();
