@@ -1,4 +1,8 @@
-import java.util.*;
+import java.util.Scanner;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.ArrayList;
+import java.util.List;
 import Database.DatabaseHandler;
 import Database.DatabaseHandlerImpl;
 import enums.Course;
@@ -10,16 +14,10 @@ import models.requests.ListUserRequest;
 import views.DisplayStudents;
 
 public class Main {
-    public static Set<String> courseSet=new HashSet<>();
-    boolean isValidCourse(String course){
-        return courseSet.contains(course);
-    }
     public static void main(String[] args)  {
-        Collections.addAll(courseSet,"A","B","C","D","E","F");
         Scanner sc = new Scanner(System.in);
-        Main ab=new Main();
-        int option,age,noOfCourses,roll;
-        String name,address,course;
+        int option,age,roll;
+        String name,address;
         DatabaseHandler db=new DatabaseHandlerImpl();
         try {
             while (true) {
@@ -36,22 +34,32 @@ public class Main {
                         age = Integer.parseInt(sc.nextLine());
                         System.out.println("Enter Address");
                         address = sc.nextLine();
-                        System.out.println("Enter Course to be registered For: A, B, C, D, E, F\nA minimum registration of 4 courses is mandatory\nEnter the no. of courses to be registered");
-                        do {
-                            noOfCourses = Integer.parseInt(sc.nextLine());
-                            if(noOfCourses<4){
-                                System.out.println("Please Enter a Number Greater Than 4");
-                            }
-                        }while (noOfCourses<4);
-                        System.out.println("Enter Courses to be Registered:");
                         List<Course> courses=new ArrayList<>();
-                        while (noOfCourses != 0) {
-                            course = sc.nextLine();
-                            if (ab.isValidCourse(course.toUpperCase())){
-                                noOfCourses = noOfCourses - 1;
-                                courses.add(Course.valueOf(course.toUpperCase()));
-                            } else{
-                                System.out.println("Invalid Course");
+                        while (true)
+                        {
+                            courses.removeAll(courses);
+                            System.out.println("Enter Course to be registered For: A, B, C, D, E, F\nA minimum registration of 4 courses is mandatory");
+                            boolean isValid=true;
+                            String [] courseArray=sc.nextLine().split(",");
+                            if(courseArray.length<4 || courseArray.length>6) {
+                                System.out.println("Please Enter a valid value in the range 4-6");
+                                continue;
+                            }
+                            else {
+                                for(String course:courseArray){
+                                    if(!Stream.of(Course.values()).map(Course::name).collect(Collectors.toList()).contains(course))
+                                    {
+                                        System.out.println("Invalid Course Entered");
+                                        isValid=false;
+                                        break;
+                                    }
+                                }
+                            }
+                            if (isValid){
+                                for (String course:courseArray) {
+                                    courses.add(Course.valueOf(course.toUpperCase()));
+                                }
+                                break;
                             }
                         }
                         CreateUserRequest createUserRequest=new CreateUserRequest(name,age,address,roll,courses);
