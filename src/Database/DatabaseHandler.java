@@ -9,6 +9,6 @@ import java.util.List;
 public interface DatabaseHandler {
     void createUser(CreateUserRequest req);
     void deleteUser(DeleteUserRequest req);
-    List<User> listUser(ListUserRequest req);
+    User listUser(ListUserRequest req);
     void closeConnection();
 }

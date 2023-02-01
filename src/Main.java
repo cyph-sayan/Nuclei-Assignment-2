@@ -66,7 +66,8 @@ public class Main {
                         db.createUser(createUserRequest);
                         break;
                     case 2:
-                        ListUserRequest listUserRequest=new ListUserRequest(SortOption.ASC, SortFieldOptions.ADDRESS);
+                        System.out.println("Enter the Roll No. of the Student to view the data");
+                        ListUserRequest listUserRequest=new ListUserRequest(Integer.parseInt(sc.nextLine()));
                         DisplayStudents ds=new DisplayStudents();
                         ds.display(db.listUser(listUserRequest));
                         break;

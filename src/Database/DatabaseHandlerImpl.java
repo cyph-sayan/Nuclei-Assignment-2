@@ -1,6 +1,5 @@
 package Database;
 import enums.Course;
-import enums.SortOption;
 import io.github.cdimascio.dotenv.Dotenv;
 import models.entities.User;
 import models.requests.CreateUserRequest;
@@ -17,16 +16,17 @@ public class DatabaseHandlerImpl implements DatabaseHandler{
     public DatabaseHandlerImpl(){
         try {
             connection = DriverManager.getConnection(dotenv.get("URL"), dotenv.get("USERNAME"), dotenv.get("PASS"));
+            Statement stmt=connection.createStatement();
+            String selectDatabase="USE NUCLEIASSIGNMENT";
+            stmt.execute(selectDatabase);
         }catch (SQLException e){
             System.out.println("Database Not Available");
         }
     }
     @Override
     public void createUser(CreateUserRequest req){
-        try(Statement stmt=connection.createStatement())
+        try
         {
-            String selectDatabase="USE NUCLEIASSIGNMENT";
-            stmt.execute(selectDatabase);
             PreparedStatement insertQuery1=connection.prepareStatement("INSERT INTO STUDENTINFO VALUES (?,?,?,?)");
             insertQuery1.setString(1,req.getFullName());
             insertQuery1.setString(2,String.valueOf(req.getRollNo()));
@@ -66,42 +66,35 @@ public class DatabaseHandlerImpl implements DatabaseHandler{
         }
     }
     @Override
-    public List<User> listUser(ListUserRequest req){
-        List<User> users=new ArrayList<>();
+    public User listUser(ListUserRequest req){
+        User user=null;
         try(Statement stmt=connection.createStatement())
         {
             String selectDatabase="USE nucleiassignment";
             stmt.execute(selectDatabase);
             PreparedStatement selectQuery;
-            if(req.getSortOption().name().equals(SortOption.ASC.name()))
-                selectQuery= connection.prepareStatement("SELECT * FROM STUDENTINFO ORDER BY (?) ASC");
-            else
-                selectQuery= connection.prepareStatement("SELECT * FROM STUDENTINFO ORDER BY (?) DESC");
-            selectQuery.setString(1,req.getSortFieldOptions().name());
+            selectQuery= connection.prepareStatement("SELECT * FROM STUDENTINFO WHERE roll=(?)");
+            selectQuery.setString(1,String.valueOf(req.getRollNo()));
             ResultSet rs=selectQuery.executeQuery();
-            System.out.printf("%20s %5s %5s %10s %15s","NAME","AGE","ROLL","ADDRESS","COURSES");
-            System.out.println();
-            while(rs.next())
+            List<Course> courses=new ArrayList<>();
+            String name=rs.getString("Name");
+            int age=rs.getInt("Age");
+            int roll=rs.getInt("Roll");
+            String address=rs.getString("Address");
+            PreparedStatement preparedStatement=connection.prepareStatement("SELECT COURSEID FROM COURSEINFO WHERE ROLL=(?) ORDER BY COURSEID ASC");
+            preparedStatement.setString(1,String.valueOf(roll));
+            ResultSet rs1=preparedStatement.executeQuery();
+            while(rs1.next())
             {
-                List<Course> courses=new ArrayList<>();
-                String name=rs.getString("Name");
-                int age=rs.getInt("Age");
-                int roll=rs.getInt("Roll");
-                String address=rs.getString("Address");
-                PreparedStatement preparedStatement=connection.prepareStatement("SELECT COURSEID FROM COURSEINFO WHERE ROLL=(?) ORDER BY COURSEID ASC");
-                preparedStatement.setString(1,String.valueOf(roll));
-                ResultSet rs1=preparedStatement.executeQuery();
-                while(rs1.next())
-                {
-                    courses.add(Course.valueOf(rs1.getString(1)));
-                }
-                users.add(new User(name,age,address,roll,courses));
+                courses.add(Course.valueOf(rs1.getString(1).toUpperCase()));
             }
+            user=new User(name,age,address,roll,courses);
+
         } catch(SQLException e){
             e.printStackTrace();
             System.out.println("Database Connection Error");
         }
-        return users;
+        return user;
     }
     @Override
     public void closeConnection() {

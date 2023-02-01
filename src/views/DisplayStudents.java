@@ -1,12 +1,11 @@
 package views;
-
 import models.entities.User;
-import java.util.List;
 
 public class DisplayStudents {
-    public void display(List<User> user)
-    {
-        for (int i=0;i< user.size();i++)
-            System.out.print(user.get(i).fullName+" "+user.get(i).address+" "+user.get(i).age+" "+user.get(i).rollNo+" "+user.get(i).courses);
+    public void display(User user) {
+        System.out.printf("%20s %5s %5s %10s %18s","NAME","AGE","ROLL","ADDRESS","COURSES");
+        System.out.println();
+        System.out.printf("%20s %5s %5s %10s %18s",user.getFullName(),user.getAge(),user.getRollNo(),user.getAddress(),user.getCourses());
+        }
     }
-}
+

@@ -2,18 +2,12 @@ package models.requests;
 import enums.SortFieldOptions;
 import enums.SortOption;
 public class ListUserRequest {
-    private SortOption sortOption;
-    private SortFieldOptions sortFieldOptions;
-    public ListUserRequest(SortOption sortOption, SortFieldOptions sortFieldOptions)
+    private int rollNo;
+    public ListUserRequest(int rollNo)
     {
-        this.sortOption=sortOption;
-        this.sortFieldOptions=sortFieldOptions;
+        this.rollNo=rollNo;
     }
-    public SortOption getSortOption(){
-        return this.sortOption;
-    }
-    public SortFieldOptions getSortFieldOptions()
-    {
-        return this.sortFieldOptions;
+    public int getRollNo() {
+        return rollNo;
     }
 }
