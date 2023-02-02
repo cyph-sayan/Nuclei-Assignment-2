@@ -1,10 +1,10 @@
+import java.util.Arrays;
 import java.util.Scanner;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.ArrayList;
 import java.util.List;
-import Database.DatabaseHandler;
-import Database.DatabaseHandlerImpl;
+import database.DatabaseHandler;
+import database.DatabaseHandlerImpl;
 import enums.Course;
 import models.entities.User;
 import models.requests.CreateUserRequest;
@@ -12,8 +12,42 @@ import models.requests.DeleteUserRequest;
 import models.requests.ListUserRequest;
 
 public class Main {
+    static Scanner sc=new Scanner(System.in);
+    CreateUserRequest createUserRequest(){
+        System.out.println("Add Student Details");
+        System.out.println("Enter Name:");
+        String name = sc.nextLine();
+        System.out.println("Enter Roll No.:");
+        int roll = Integer.parseInt(sc.nextLine());
+        System.out.println("Enter Age:");
+        int age = Integer.parseInt(sc.nextLine());
+        System.out.println("Enter Address");
+        String address = sc.nextLine();
+        List<Course> courses=new ArrayList<>();
+        while (true) {
+            System.out.println("Enter Course to be registered For: A, B, C, D, E, F\nA minimum registration of 4 courses is mandatory");
+            AtomicBoolean isValid = new AtomicBoolean(true);
+            List<String> inputCourses = Arrays.asList(sc.nextLine().split(","));
+            if (inputCourses.size() < 4 || inputCourses.size() > 6) {
+                System.out.println("Please Enter a valid value in the range 4-6");
+                continue;
+            }
+            inputCourses.forEach(inputcourse->{
+                if (!Course.names.contains(inputcourse.toUpperCase())) {
+                    System.out.println("Invalid Course Entered");
+                    isValid.set(false);
+                }
+            });
+            if (isValid.get()) {
+                inputCourses.forEach(inputCourse->{
+                    courses.add(Course.valueOf(inputCourse.toUpperCase()));
+                });
+            }
+            break;
+        }
+        return new CreateUserRequest(name,age,address,roll,courses);
+    }
     public static void main(String[] args)  {
-        Scanner sc = new Scanner(System.in);
         int option,age,roll;
         String name,address;
         DatabaseHandler db=new DatabaseHandlerImpl();
@@ -23,44 +57,8 @@ public class Main {
                 option = Integer.parseInt(sc.nextLine());
                 switch (option) {
                     case 1:
-                        System.out.println("Add Student Details");
-                        System.out.println("Enter Name:");
-                        name = sc.nextLine();
-                        System.out.println("Enter Roll No.:");
-                        roll = Integer.parseInt(sc.nextLine());
-                        System.out.println("Enter Age:");
-                        age = Integer.parseInt(sc.nextLine());
-                        System.out.println("Enter Address");
-                        address = sc.nextLine();
-                        List<Course> courses=new ArrayList<>();
-                        while (true)
-                        {
-                            System.out.println("Enter Course to be registered For: A, B, C, D, E, F\nA minimum registration of 4 courses is mandatory");
-                            boolean isValid=true;
-                            String [] courseArray=sc.nextLine().split(",");
-                            if(courseArray.length<4 || courseArray.length>6) {
-                                System.out.println("Please Enter a valid value in the range 4-6");
-                                continue;
-                            }
-                            else {
-                                for(String course:courseArray){
-                                    if(!Stream.of(Course.values()).map(Course::name).collect(Collectors.toList()).contains(course.toUpperCase()))
-                                    {
-                                        System.out.println("Invalid Course Entered");
-                                        isValid=false;
-                                        break;
-                                    }
-                                }
-                            }
-                            if (isValid){
-                                for (String course:courseArray) {
-                                    courses.add(Course.valueOf(course.toUpperCase()));
-                                }
-                                break;
-                            }
-                        }
-                        CreateUserRequest createUserRequest=new CreateUserRequest(name,age,address,roll,courses);
-                        db.createUser(createUserRequest);
+                        Main ob=new Main();
+                        db.createUser(ob.createUserRequest());
                         break;
                     case 2:
                         System.out.println("Enter the Roll No. of the Student to view the data or * for all the data");

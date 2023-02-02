@@ -1,6 +1,6 @@
 package constants;
 
-public class databasefieldconstants {
+public class DatabaseFieldConstants {
     public static String studentTableName="studentinfo";
     public static String name="Name";
     public static String age="Age";
