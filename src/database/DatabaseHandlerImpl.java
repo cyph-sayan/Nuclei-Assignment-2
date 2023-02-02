@@ -23,7 +23,6 @@ public class DatabaseHandlerImpl implements DatabaseHandler {
     Dotenv dotenv = Dotenv.load();
     Connection connection;
     Statement stmt;
-
     public DatabaseHandlerImpl() {
         try {
             connection = DriverManager.getConnection(Objects.requireNonNull(dotenv.get("URL")), dotenv.get("USERNAME"), dotenv.get("PASS"));
@@ -82,22 +81,22 @@ public class DatabaseHandlerImpl implements DatabaseHandler {
     @Override
     public List<User> getUsers(String listStudentsStatement,String getCoursesStatement)throws SQLException {
         List<User> users=new ArrayList<>();
-            PreparedStatement ps=connection.prepareStatement(listStudentsStatement);
-            ResultSet rs= ps.executeQuery();
-            while(rs.next()){
-                List<Course> courses = new ArrayList<>();
-                String name = rs.getString(DatabaseFieldConstants.name);
-                int age = rs.getInt(DatabaseFieldConstants.age);
-                int roll = rs.getInt(DatabaseFieldConstants.roll);
-                String address = rs.getString(DatabaseFieldConstants.address);
-                PreparedStatement ps1=connection.prepareStatement(getCoursesStatement);
-                ps1.setString(1,String.valueOf(roll));
-                ResultSet rs1 = ps1.executeQuery();
-                while (rs1.next()) {
-                    courses.add(Course.valueOf(rs1.getString(1).toUpperCase()));
-                }
-                users.add(new User(name, age, address, roll, courses));
+        PreparedStatement ps=connection.prepareStatement(listStudentsStatement);
+        ResultSet rs= ps.executeQuery();
+        while(rs.next()){
+            List<Course> courses = new ArrayList<>();
+            String name = rs.getString(DatabaseFieldConstants.name);
+            int age = rs.getInt(DatabaseFieldConstants.age);
+            int roll = rs.getInt(DatabaseFieldConstants.roll);
+            String address = rs.getString(DatabaseFieldConstants.address);
+            PreparedStatement ps1=connection.prepareStatement(getCoursesStatement);
+            ps1.setString(1,String.valueOf(roll));
+            ResultSet rs1 = ps1.executeQuery();
+            while (rs1.next()) {
+                courses.add(Course.valueOf(rs1.getString(1).toUpperCase()));
             }
+            users.add(new User(name, age, address, roll, courses));
+        }
         return users;
     }
     @Override
