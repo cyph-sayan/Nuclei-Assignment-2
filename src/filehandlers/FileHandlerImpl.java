@@ -5,19 +5,17 @@ import java.io.FileNotFoundException;
 import java.util.Scanner;
 
 public class FileHandlerImpl implements FileHandler{
-    Scanner sc;
-    public FileHandlerImpl(String pathname){
-        try{
-            sc=new Scanner(new File(pathname));
-        }catch (FileNotFoundException fe)
-        {
-            fe.printStackTrace();
-            System.out.println(fe.getMessage());
-        }
-    }
+
     @Override
-    public String getQueryStatement() {
-        return sc.nextLine();
+    public String getQueryStatement(String pathname) {
+        try {
+            Scanner sc=new Scanner(new File(pathname));
+            return sc.nextLine();
+        }catch (FileNotFoundException fileNotFoundException)
+        {
+            System.out.println(fileNotFoundException.getMessage());
+        }
+        return null;
     }
 }
 

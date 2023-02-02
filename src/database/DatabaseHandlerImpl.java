@@ -7,8 +7,6 @@ import models.entities.User;
 import models.requests.CreateUserRequest;
 import models.requests.DeleteUserRequest;
 import models.requests.GetUserRequest;
-import successmessages.SuccessMessages;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -33,67 +31,64 @@ public class DatabaseHandlerImpl implements DatabaseHandler {
     }
 
     @Override
-    public void createUser(String insertStudentStatement, String insertCourseStatement, CreateUserRequest req)throws SQLException {
+    public User createUser(String insertStudentStatement, String insertCourseStatement, CreateUserRequest req)throws SQLException {
         PreparedStatement pstmt = connection.prepareStatement(insertStudentStatement);
-        pstmt.setString(1, req.getFullName());
-        pstmt.setString(2, String.valueOf(req.getRollNo()));
-        pstmt.setString(3, String.valueOf(req.getAge()));
-        pstmt.setString(4, req.getAddress());
+        pstmt.setString(1, req.fullName);
+        pstmt.setString(2, String.valueOf(req.rollNo));
+        pstmt.setString(3, String.valueOf(req.age));
+        pstmt.setString(4, req.address);
         pstmt.executeUpdate();
-        PreparedStatement pstm2 = connection.prepareStatement(insertCourseStatement);
-        pstm2.setString(2, String.valueOf(req.getRollNo()));
-        for (int i = 0; i < req.getCourses().size(); i++) {
-            pstm2.setString(1, String.valueOf(req.getCourses().get(i)));
-            pstm2.executeUpdate();
+        pstmt = connection.prepareStatement(insertCourseStatement);
+        pstmt.setString(2, String.valueOf(req.rollNo));
+        for (int i = 0; i < req.courses.size(); i++) {
+            pstmt.setString(1, String.valueOf(req.courses.get(i)));
+            pstmt.executeUpdate();
         }
+        return new User(req.fullName, req.age, req.address, req.rollNo,req.courses);
     }
     @Override
     public void deleteUser(String deleteUserStatement,DeleteUserRequest req)throws SQLException {
         PreparedStatement delUser = connection.prepareStatement(deleteUserStatement);
-        delUser.setString(1, String.valueOf(req.getRollNo()));
-        int rowsAffected = delUser.executeUpdate();
-        if (rowsAffected == 0) {
-            System.out.println(ExceptionErrorMessages.SQL_NO_ROWS_AFFECTED);
-        } else {
-            System.out.println(SuccessMessages.SQL_DELETE_SUCCESS_MESSAGE);
-        }
+        delUser.setString(1, String.valueOf(req.rollNo));
+        delUser.executeUpdate();
     }
     @Override
     public User getUser(String getStudentStatement, String getCourseStatement,GetUserRequest request)throws SQLException{
-        PreparedStatement ps=connection.prepareStatement(getStudentStatement);
-        ps.setString(1,String.valueOf(request.getRollNo()));
-        ResultSet rs=ps.executeQuery();
-        rs.next();
+        PreparedStatement preparedStatement=connection.prepareStatement(getStudentStatement);
+        preparedStatement.setString(1,String.valueOf(request.rollNo));
+        ResultSet resultSet=preparedStatement.executeQuery();
+        resultSet.next();
         List<Course> courses = new ArrayList<>();
-        String name = rs.getString(DatabaseFieldConstants.name);
-        int age = rs.getInt(DatabaseFieldConstants.age);
-        int roll = rs.getInt(DatabaseFieldConstants.roll);
-        String address = rs.getString(DatabaseFieldConstants.address);
-        PreparedStatement ps1=connection.prepareStatement(getCourseStatement);
-        ps1.setString(1,String.valueOf(request.getRollNo()));
-        ResultSet rs1 = ps1.executeQuery();
-        while (rs1.next()) {
-            courses.add(Course.valueOf(rs1.getString(1).toUpperCase()));
+        String name = resultSet.getString(DatabaseFieldConstants.NAME);
+        int age = resultSet.getInt(DatabaseFieldConstants.AGE);
+        int roll = resultSet.getInt(DatabaseFieldConstants.ROLL);
+        String address = resultSet.getString(DatabaseFieldConstants.ADDRESS);
+        preparedStatement=connection.prepareStatement(getCourseStatement);
+        preparedStatement.setString(1,String.valueOf(request.rollNo));
+        resultSet = preparedStatement.executeQuery();
+        while (resultSet.next()) {
+            courses.add(Course.valueOf(resultSet.getString(1).toUpperCase()));
         }
         return new User(name, age, address, roll, courses);
     }
 
     @Override
-    public List<User> getUsers(String listStudentsStatement,String getCoursesStatement)throws SQLException {
+    public List<User> getUsers(String listStudentsStatement,String getCoursesStatement,int pageSize,int pageToken)throws SQLException {
         List<User> users=new ArrayList<>();
-        PreparedStatement ps=connection.prepareStatement(listStudentsStatement);
-        ResultSet rs= ps.executeQuery();
-        while(rs.next()){
+        PreparedStatement preparedStatement=connection.prepareStatement(listStudentsStatement);
+        System.out.println(listStudentsStatement);
+        ResultSet resultSet= preparedStatement.executeQuery();
+        while(resultSet.next()){
             List<Course> courses = new ArrayList<>();
-            String name = rs.getString(DatabaseFieldConstants.name);
-            int age = rs.getInt(DatabaseFieldConstants.age);
-            int roll = rs.getInt(DatabaseFieldConstants.roll);
-            String address = rs.getString(DatabaseFieldConstants.address);
-            PreparedStatement ps1=connection.prepareStatement(getCoursesStatement);
-            ps1.setString(1,String.valueOf(roll));
-            ResultSet rs1 = ps1.executeQuery();
-            while (rs1.next()) {
-                courses.add(Course.valueOf(rs1.getString(1).toUpperCase()));
+            String name = resultSet.getString(DatabaseFieldConstants.NAME);
+            int age = resultSet.getInt(DatabaseFieldConstants.AGE);
+            int roll = resultSet.getInt(DatabaseFieldConstants.ROLL);
+            String address = resultSet.getString(DatabaseFieldConstants.ADDRESS);
+            preparedStatement=connection.prepareStatement(getCoursesStatement);
+            preparedStatement.setString(1,String.valueOf(roll));
+            ResultSet resultSet1 = preparedStatement.executeQuery();
+            while (resultSet1.next()) {
+                courses.add(Course.valueOf(resultSet1.getString(1).toUpperCase()));
             }
             users.add(new User(name, age, address, roll, courses));
         }

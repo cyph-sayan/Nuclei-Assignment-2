@@ -1,5 +1,5 @@
 package filehandlers;
 
 public interface FileHandler {
-    String getQueryStatement();
+    String getQueryStatement(String pathname);
 }
