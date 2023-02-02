@@ -13,6 +13,34 @@ import services.DatabaseServices;
 
 public class Main {
     static Scanner sc=new Scanner(System.in);
+    boolean isValidNoOfCourses(List<String> courses){
+        return (courses.size()>=4 || courses.size()<=6);
+    }
+    List<Course> getCourses() {
+        List<Course> courses=new ArrayList<>();
+        while (true) {
+            System.out.println("Enter Course to be registered For: A, B, C, D, E, F\nA minimum registration of 4 courses is mandatory");
+            AtomicBoolean isValid = new AtomicBoolean(true);
+            List<String> inputCourses = Arrays.asList(sc.nextLine().split(","));
+            if (!isValidNoOfCourses(inputCourses)) {
+                System.out.println("Please Enter a valid value in the range 4-6");
+                continue;
+            }
+            inputCourses.forEach(inputCourse -> {
+                if (!Course.names.contains(inputCourse.toUpperCase())) {
+                    System.out.println("Invalid Course Entered");
+                    isValid.set(false);
+                }
+            });
+            if (isValid.get()) {
+                inputCourses.forEach(inputCourse -> {
+                    courses.add(Course.valueOf(inputCourse.toUpperCase()));
+                });
+            }
+            break;
+        }
+        return courses;
+    }
     CreateUserRequest createUserRequest(){
         System.out.println("Add Student Details");
         System.out.println("Enter Name:");
@@ -23,28 +51,7 @@ public class Main {
         int age = Integer.parseInt(sc.nextLine());
         System.out.println("Enter Address");
         String address = sc.nextLine();
-        List<Course> courses=new ArrayList<>();
-        while (true) {
-            System.out.println("Enter Course to be registered For: A, B, C, D, E, F\nA minimum registration of 4 courses is mandatory");
-            AtomicBoolean isValid = new AtomicBoolean(true);
-            List<String> inputCourses = Arrays.asList(sc.nextLine().split(","));
-            if (inputCourses.size() < 4 || inputCourses.size() > 6) {
-                System.out.println("Please Enter a valid value in the range 4-6");
-                continue;
-            }
-            inputCourses.forEach(inputcourse->{
-                if (!Course.names.contains(inputcourse.toUpperCase())) {
-                    System.out.println("Invalid Course Entered");
-                    isValid.set(false);
-                }
-            });
-            if (isValid.get()) {
-                inputCourses.forEach(inputCourse->{
-                    courses.add(Course.valueOf(inputCourse.toUpperCase()));
-                });
-            }
-            break;
-        }
+        List<Course> courses=getCourses();
         return new CreateUserRequest(name,age,address,roll,courses);
     }
     public static void main(String[] args)  {
@@ -53,7 +60,7 @@ public class Main {
         try {
             DatabaseServices databaseServices =new DatabaseServices();
             while (true) {
-                System.out.println("1.Add Student Details\n2.Display Student Details\n3.Delete Student Details\n4.Save To File\n5.Exit");
+                System.out.println("1.Add Student Details\n2.Display Student Details\n3.Delete Student Details\n4.Exit");
                 option = Integer.parseInt(sc.nextLine());
                 switch (option) {
                     case 1:

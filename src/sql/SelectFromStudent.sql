@@ -1,1 +1,1 @@
-SELECT * FROM studentinfo WHERE roll=?
+SELECT * FROM student WHERE roll=?

@@ -1,1 +1,1 @@
-INSERT INTO studentinfo VALUES (?,?,?,?)
+INSERT INTO student VALUES (?,?,?,?)
