@@ -6,10 +6,10 @@ import java.util.List;
 import database.DatabaseHandler;
 import database.DatabaseHandlerImpl;
 import enums.Course;
-import models.entities.User;
 import models.requests.CreateUserRequest;
 import models.requests.DeleteUserRequest;
-import models.requests.ListUserRequest;
+import models.requests.GetUserRequest;
+import services.DatabaseServices;
 
 public class Main {
     static Scanner sc=new Scanner(System.in);
@@ -48,34 +48,31 @@ public class Main {
         return new CreateUserRequest(name,age,address,roll,courses);
     }
     public static void main(String[] args)  {
-        int option,age,roll;
-        String name,address;
+        int option;
         DatabaseHandler db=new DatabaseHandlerImpl();
         try {
+            DatabaseServices databaseServices =new DatabaseServices();
             while (true) {
                 System.out.println("1.Add Student Details\n2.Display Student Details\n3.Delete Student Details\n4.Save To File\n5.Exit");
                 option = Integer.parseInt(sc.nextLine());
                 switch (option) {
                     case 1:
                         Main ob=new Main();
-                        db.createUser(ob.createUserRequest());
+                        databaseServices.createStudent(ob.createUserRequest());
                         break;
                     case 2:
                         System.out.println("Enter the Roll No. of the Student to view the data or * for all the data");
                         String rollNo=sc.nextLine();
                         if(rollNo.equals("*"))
                         {
-                            List<User> users=db.getUsers();
-                            users.forEach(user->{
-                                System.out.println(user.toString());
-                            });
+                            databaseServices.getStudents();
                         }
                         else
-                            System.out.println(db.getUser(new ListUserRequest(Integer.parseInt(rollNo))).toString());
+                            databaseServices.getStudent(new GetUserRequest(Integer.parseInt(rollNo)));
                         break;
                     case 3:
                         System.out.println("Enter Roll Number To Be Deleted");
-                        db.deleteUser(new DeleteUserRequest(Integer.parseInt(sc.nextLine())));
+                        databaseServices.deleteStudent(new DeleteUserRequest(Integer.parseInt(sc.nextLine())));
                         break;
                     case 5:
                         db.closeConnection();

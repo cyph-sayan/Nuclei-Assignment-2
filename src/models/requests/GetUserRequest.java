@@ -1,9 +1,8 @@
 package models.requests;
-import enums.SortFieldOptions;
-import enums.SortOption;
-public class ListUserRequest {
+
+public class GetUserRequest {
     private int rollNo;
-    public ListUserRequest(int rollNo)
+    public GetUserRequest(int rollNo)
     {
         this.rollNo=rollNo;
     }
