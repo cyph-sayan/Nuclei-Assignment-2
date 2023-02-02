@@ -3,8 +3,6 @@ import java.util.Scanner;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.ArrayList;
 import java.util.List;
-import database.DatabaseHandler;
-import database.DatabaseHandlerImpl;
 import enums.Course;
 import models.requests.CreateUserRequest;
 import models.requests.DeleteUserRequest;

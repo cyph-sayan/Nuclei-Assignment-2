@@ -10,7 +10,9 @@ public class FileHandlerImpl implements FileHandler{
     public String getQueryStatement(String pathname) {
         try {
             Scanner sc=new Scanner(new File(pathname));
-            return sc.nextLine();
+            String queryStatement=sc.nextLine();
+            sc.close();
+            return queryStatement;
         }catch (FileNotFoundException fileNotFoundException)
         {
             System.out.println(fileNotFoundException.getMessage());
