@@ -11,6 +11,7 @@ import models.requests.ListUserRequest;
 import services.DatabaseServices;
 
 public class Main {
+    public static int pageToken=0;
     static Scanner sc=new Scanner(System.in);
     boolean isValidCoursesCount(List<String> courses){
         return (courses.size()>=4 && courses.size()<=6);
@@ -21,18 +22,17 @@ public class Main {
             System.out.println("Enter Course to be registered For: A, B, C, D, E, F\nA minimum registration of 4 courses is mandatory");
             AtomicBoolean isValid = new AtomicBoolean(true);
             List<String> inputCourses = Arrays.asList(sc.nextLine().split(","));
-            if (!isValidCoursesCount(inputCourses)) {
-                System.out.println("Please Enter a valid value in the range 4-6");
-                continue;
-            }
             inputCourses.forEach(inputCourse -> {
                 if (!Course.names.contains(inputCourse.toUpperCase())) {
                     System.out.println("Invalid Course Entered");
                     isValid.set(false);
+                }else {
+                    courses.add(Course.valueOf(inputCourse.toUpperCase()));
                 }
             });
-            if (isValid.get()) {
-                inputCourses.forEach(inputCourse -> courses.add(Course.valueOf(inputCourse.toUpperCase())));
+            if (!isValidCoursesCount(inputCourses)) {
+                System.out.println("Please Enter A Valid Values in the range 4-6");
+                continue;
             }
             break;
         }
@@ -74,7 +74,7 @@ public class Main {
                             int sortField=Integer.parseInt(sc.nextLine());
                             System.out.println("Sort By:\n1.Ascending\n2.Descending");
                             int sortBy=Integer.parseInt(sc.nextLine());
-                            databaseServices.getStudents(new ListUserRequest(pageSize,sortField,sortBy));
+                            pageToken=databaseServices.listGetStudents(new ListUserRequest(pageSize,sortField,sortBy),pageToken);
                         }
                         else
                             databaseServices.getStudent(new GetUserRequest(Integer.parseInt(rollNo)));

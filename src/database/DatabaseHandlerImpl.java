@@ -73,10 +73,13 @@ public class DatabaseHandlerImpl implements DatabaseHandler {
     }
 
     @Override
-    public List<User> getUsers(String listStudentsStatement,String getCoursesStatement,int pageSize,int pageToken)throws SQLException {
+    public List<User> listGetUsers(String listStudentsStatement,String getCoursesStatement,int pageSize,int pageToken,int sortField, int sortWays)throws SQLException {
         List<User> users=new ArrayList<>();
         PreparedStatement preparedStatement=connection.prepareStatement(listStudentsStatement);
-        System.out.println(listStudentsStatement);
+        preparedStatement.setString(1,DatabaseFieldConstants.SORT_FIELD[sortField-1]);
+        preparedStatement.setString(2,DatabaseFieldConstants.SORT_WAYS[sortWays-1]);
+        preparedStatement.setString(3,String.valueOf(pageToken));
+        preparedStatement.setString(4,String.valueOf(pageToken));
         ResultSet resultSet= preparedStatement.executeQuery();
         while(resultSet.next()){
             List<Course> courses = new ArrayList<>();
