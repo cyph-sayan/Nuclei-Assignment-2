@@ -1,0 +1,1 @@
+INSERT INTO student_course VALUES (?,?)
