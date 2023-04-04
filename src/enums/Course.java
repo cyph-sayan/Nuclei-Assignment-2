@@ -13,7 +13,8 @@ public enum Course {
     E,
     F,
     G,
-    H;
+    H,
+    K;
     public static List<String> names = Stream.of(Course.values()).map(Enum::name).collect(Collectors.toList());
 }
 
